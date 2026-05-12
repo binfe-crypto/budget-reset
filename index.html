@@ -14,8 +14,14 @@
     אפס סיסמה
   </button>
   <script>
-    firebase.initializeApp({ /* הגדרות Firebase שלך */ });
-
+           firebase.initializeApp({
+          apiKey: "AIzaSyBEbaFh_QnBgpWFw7bmmdGUL4GN9zp2luU",
+          authDomain: "budget-bd21a.firebaseapp.com",
+          projectId: "budget-bd21a",
+          storageBucket: "budget-bd21a.firebasestorage.app",
+          messagingSenderId: "372546696795",
+          appId: "1:372546696795:web:6732accf079b64b1ea317e"
+    });
     function doReset() {
       const params = new URLSearchParams(window.location.search);
       const oobCode = params.get('oobCode');
