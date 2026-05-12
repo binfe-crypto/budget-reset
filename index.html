@@ -5,35 +5,80 @@
   <title>איפוס סיסמה</title>
   <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-auth-compat.js"></script>
+  <style>
+    body { font-family:sans-serif;text-align:center;padding:40px;background:#f5f7ff }
+    .card { background:white;border-radius:16px;padding:32px;max-width:360px;margin:0 auto;box-shadow:0 4px 20px rgba(0,0,0,0.1) }
+    input { width:100%;padding:12px;border:1.5px solid #ddd;border-radius:8px;font-size:16px;margin:12px 0;box-sizing:border-box }
+    button { width:100%;padding:14px;background:#1a56db;color:white;border:none;border-radius:8px;font-size:16px;cursor:pointer;font-weight:700 }
+    button:disabled { background:#aaa;cursor:not-allowed }
+    .success { color:#16a34a;font-size:18px;font-weight:700;margin:16px 0 }
+    .error { color:#dc2626;font-size:14px;margin:8px 0 }
+  </style>
 </head>
-<body style="font-family:sans-serif;text-align:center;padding:40px">
-  <h2>איפוס סיסמה</h2>
-  <p id="msg">לוחץ על הכפתור לאיפוס הסיסמה שלך</p>
-  <button id="btn" onclick="doReset()" 
-    style="padding:14px 28px;background:#1a56db;color:white;border:none;border-radius:8px;font-size:16px;cursor:pointer">
-    אפס סיסמה
-  </button>
+<body>
+  <div class="card">
+    <h2>איפוס סיסמה</h2>
+    <div id="form-area">
+      <p style="color:#666;font-size:14px">הכנס סיסמה חדשה לחשבונך</p>
+      <input type="password" id="password" placeholder="סיסמה חדשה" />
+      <input type="password" id="password2" placeholder="אימות סיסמה" />
+      <div class="error" id="error-msg"></div>
+      <button id="btn" onclick="doReset()">אפס סיסמה</button>
+    </div>
+    <div id="success-area" style="display:none">
+      <div style="font-size:48px">✅</div>
+      <div class="success">הסיסמה אופסה בהצלחה!</div>
+      <p style="color:#666;font-size:14px">כעת תוכל להתחבר עם הסיסמה החדשה שלך</p>
+    </div>
+  </div>
+
   <script>
-           firebase.initializeApp({
-          apiKey: "AIzaSyBEbaFh_QnBgpWFw7bmmdGUL4GN9zp2luU",
-          authDomain: "budget-bd21a.firebaseapp.com",
-          projectId: "budget-bd21a",
-          storageBucket: "budget-bd21a.firebasestorage.app",
-          messagingSenderId: "372546696795",
-          appId: "1:372546696795:web:6732accf079b64b1ea317e"
+    firebase.initializeApp({
+      apiKey: "AIzaSyBEbaFh_QnBgpWFw7bmmdGUL4GN9zp2luU",
+      authDomain: "budget-bd21a.firebaseapp.com",
+      projectId: "budget-bd21a",
+      storageBucket: "budget-bd21a.firebasestorage.app",
+      messagingSenderId: "372546696795",
+      appId: "1:372546696795:web:6732accf079b64b1ea317e"
     });
+
     function doReset() {
+      const password = document.getElementById('password').value;
+      const password2 = document.getElementById('password2').value;
+      const errorMsg = document.getElementById('error-msg');
+
+      if (!password || password.length < 6) {
+        errorMsg.textContent = 'הסיסמה חייבת להכיל לפחות 6 תווים';
+        return;
+      }
+      if (password !== password2) {
+        errorMsg.textContent = 'הסיסמאות אינן תואמות';
+        return;
+      }
+
+      const btn = document.getElementById('btn');
+      btn.disabled = true;
+      btn.textContent = 'שומר...';
+      errorMsg.textContent = '';
+
       const params = new URLSearchParams(window.location.search);
       const oobCode = params.get('oobCode');
-      const newPassword = prompt('הכנס סיסמה חדשה:');
-      if (!newPassword) return;
-      firebase.auth().confirmPasswordReset(oobCode, newPassword)
+
+      firebase.auth().confirmPasswordReset(oobCode, password)
         .then(() => {
-          document.getElementById('msg').textContent = '✅ הסיסמה אופסה בהצלחה!';
-          document.getElementById('btn').style.display = 'none';
+          document.getElementById('form-area').style.display = 'none';
+          document.getElementById('success-area').style.display = 'block';
         })
         .catch(e => {
-          document.getElementById('msg').textContent = '❌ שגיאה: ' + e.message;
+          btn.disabled = false;
+          btn.textContent = 'אפס סיסמה';
+          if (e.code === 'auth/expired-action-code') {
+            errorMsg.textContent = 'הקישור פג תוקף — בקש קישור חדש מהאפליקציה';
+          } else if (e.code === 'auth/invalid-action-code') {
+            errorMsg.textContent = 'הקישור אינו תקין — בקש קישור חדש מהאפליקציה';
+          } else {
+            errorMsg.textContent = 'שגיאה: ' + e.message;
+          }
         });
     }
   </script>
