@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>איפוס סיסמה</title>
+  <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-auth-compat.js"></script>
+</head>
+<body style="font-family:sans-serif;text-align:center;padding:40px">
+  <h2>איפוס סיסמה</h2>
+  <p id="msg">לוחץ על הכפתור לאיפוס הסיסמה שלך</p>
+  <button id="btn" onclick="doReset()" 
+    style="padding:14px 28px;background:#1a56db;color:white;border:none;border-radius:8px;font-size:16px;cursor:pointer">
+    אפס סיסמה
+  </button>
+  <script>
+    firebase.initializeApp({ /* הגדרות Firebase שלך */ });
+
+    function doReset() {
+      const params = new URLSearchParams(window.location.search);
+      const oobCode = params.get('oobCode');
+      const newPassword = prompt('הכנס סיסמה חדשה:');
+      if (!newPassword) return;
+      firebase.auth().confirmPasswordReset(oobCode, newPassword)
+        .then(() => {
+          document.getElementById('msg').textContent = '✅ הסיסמה אופסה בהצלחה!';
+          document.getElementById('btn').style.display = 'none';
+        })
+        .catch(e => {
+          document.getElementById('msg').textContent = '❌ שגיאה: ' + e.message;
+        });
+    }
+  </script>
+</body>
+</html>
